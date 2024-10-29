@@ -29,7 +29,9 @@ parliament_data <- function(election_data = NULL,
                             type = c(
                               "horseshoe",
                               "semicircle",
+                              "hemicycle",
                               "thirdcircle",
+                              "circle-4-5",
                               "circle",
                               "classroom",
                               "opposing_benches"
@@ -42,7 +44,7 @@ parliament_data <- function(election_data = NULL,
     parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(8, 10))
   }
 
-  else if (type == "semicircle") {
+  else if (type == "semicircle" | type == "hemicycle" ) {
     parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(1, 2))
   }
   
@@ -50,6 +52,22 @@ parliament_data <- function(election_data = NULL,
     parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(1, 2), segment = 1/3)
   }
 
+  else if (type == "circle-4-5") {
+    parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(1, 2), segment = 4/(5*2))
+  }
+  
+  else if (length(grep("circle-\\d+-\\d+", type)==1)) {
+    # Fall through for generic 
+    digits <- gregexpr("\\d+", type)
+    digit_text <- regmatches(type, digits)
+    values <- as.numeric(unlist(digit_text))
+    if (values[2] == 0) {
+      warning("parliament_data cannot have 0 as second number in type: ",type)
+    } else {
+      parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(1, 2),
+                                      segment = values[1]/(values[2]*2))
+    }
+  }
   else if (type == "circle") {
     parl_layout <- calc_coordinates(sum(party_seats), parl_rows, c(1, 2), segment = 1)
   }
